@@ -2,16 +2,8 @@
 __author__ = 'seal'
 __data__ = '7/29/17'
 
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-import pymysql
-
-app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:root@127.0.0.1:8889/movie"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
-
-db = SQLAlchemy(app)
+from app import db
 
 
 # 会员
@@ -159,6 +151,10 @@ class Admin(db.Model):
     def __repr__(self):
         return "<Admin %r>" % self.name
 
+    def check_pwd(self, pwd):
+        from werkzeug.security import check_password_hash
+        return check_password_hash(self.pwd, pwd)
+
 
 # 管理员登录日志
 class Adminlog(db.Model):
@@ -185,5 +181,5 @@ class Oplog(db.Model):
         return "<Oplog %r>" % self.id
 
 
-if __name__ == "__main__":
-    db.create_all()
+        # if __name__ == "__main__":
+        #     db.create_all()
