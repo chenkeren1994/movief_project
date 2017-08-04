@@ -82,7 +82,7 @@ def pwd():
         db.session.add(admin)
         db.session.commit()
         flash("修改密码成功, 请重新登录！","ok")
-        redirect(url_for('admin.logout'))
+        return redirect(url_for('admin.logout'))
     return render_template("admin/pwd.html",form=form)
 
 
@@ -195,7 +195,7 @@ def logout():
 # 添加电影
 @admin.route("/movie/add/", methods=["GET", "POST"])
 @admin_login_req
-@admin_auth
+#@admin_auth
 def movie_add():
     form = MovieForm()
     if form.validate_on_submit():
@@ -307,7 +307,7 @@ def movie_edit(id=None):
 # 添加预告
 @admin.route("/preview/add/", methods=['GET', 'POST'])
 @admin_login_req
-@admin_auth
+#@admin_auth
 def preview_add():
     form = PreviewForm()
     if form.validate_on_submit():
