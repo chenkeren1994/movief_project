@@ -53,7 +53,7 @@
                                     <td>{{ v.email }}</td>
                                     <td>{{ v.phone }}</td>
                                     <td>
-                                        <img src="{{ url_for('static',filename='uploads/users/'+v.face) }}" style="width: 50px" class="img-responsive center-block" alt="">
+                                        <img src="{{ url_for('static',filename='uploads/users/'+ v.face|string) }}" style="width: 50px" class="img-responsive center-block" alt="">
                                     </td>
                                     <td>{{ v.addtime }}</td>
                                     <td>

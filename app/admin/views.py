@@ -233,7 +233,7 @@ def movie_add():
 # 电影列表
 @admin.route("/movie/list/<int:page>/", methods=["GET"])
 @admin_login_req
-@admin_auth
+#@admin_auth
 def movie_list(page=None):
     if page is None:
         page = 1
@@ -248,19 +248,25 @@ def movie_list(page=None):
 # 删除电影
 @admin.route("/movie/del/<int:id>/", methods=["GET"])
 @admin_login_req
-@admin_auth
+#@admin_auth
 def movie_del(id=None):
     movie = Movie.query.get_or_404(int(id))
+
+    old_url = app.config["UP_DIR"] + movie.url
+    old_logo = app.config["UP_DIR"] + movie.logo
+
     db.session.delete(movie)
     db.session.commit()
     flash("删除电影成功", "ok")
+    os.remove(old_url)
+    os.remove(old_logo)
     return redirect(url_for('admin.movie_list', page=1))
 
 
 # 编辑电影
 @admin.route("/movie/edit/<int:id>/", methods=["GET", "POST"])
 @admin_login_req
-@admin_auth
+#@admin_auth
 def movie_edit(id=None):
     form = MovieForm()
     form.url.validators = []
@@ -281,15 +287,18 @@ def movie_edit(id=None):
             os.chmod(app.config["UP_DIR"], "rw")
 
         if form.url.data.filename != "":
+            old_url = app.config["UP_DIR"] + movie.url
             file_url = secure_filename(form.url.data.filename)
             movie.url = change_filename(file_url)
             form.url.data.save(app.config["UP_DIR"] + movie.url)
+            os.remove(old_url)
 
         if form.logo.data.filename != "":
+            old_logo = app.config["UP_DIR"] + movie.logo
             file_logo = secure_filename(form.logo.data.filename)
             movie.logo = change_filename(file_logo)
             form.logo.data.save(app.config["UP_DIR"] + movie.logo)
-
+            os.remove(old_logo)
         movie.star = data["star"]
         movie.tag_id = data["tag_id"]
         movie.info = data["info"]
@@ -331,7 +340,7 @@ def preview_add():
 
 @admin.route("/preview/list/<int:page>/", methods=['GET'])
 @admin_login_req
-@admin_auth
+#@admin_auth
 def preview_list(page=None):
     if page is None:
         page = 1
@@ -343,19 +352,21 @@ def preview_list(page=None):
 
 @admin.route("/preview/del/<int:id>/", methods=['GET'])
 @admin_login_req
-@admin_auth
+#@admin_auth
 def preview_del(id=None):
     preview = Preview.query.get_or_404(int(id))
+    old_logo = app.config["UP_DIR"] + preview.logo
     db.session.delete(preview)
     db.session.commit()
     flash("删除预告成功", "ok")
+    os.remove(old_logo)
     return redirect(url_for('admin.preview_list', page=1))
 
 
 # 编辑预告
 @admin.route("/preview/edit/<int:id>/", methods=['GET', 'POST'])
 @admin_login_req
-@admin_auth
+#@admin_auth
 def preview_edit(id):
     form = PreviewForm()
     form.logo.validators = []
@@ -364,6 +375,7 @@ def preview_edit(id):
         form.title.data = preview.title
     if form.validate_on_submit():
         data = form.data
+        old_logo = app.config["UP_DIR"] + preview.logo
         if form.logo.data.filename != "":
             file_logo = secure_filename(form.logo.data.filename)
             preview.logo = change_filename(file_logo)
@@ -372,13 +384,14 @@ def preview_edit(id):
         db.session.add(preview)
         db.session.commit()
         flash("修改预告成功", "ok")
+        os.remove(old_logo)
         return redirect(url_for('admin.preview_edit', id=id))
     return render_template("admin/preview_edit.html", form=form, preview=preview)
 
 
 @admin.route("/user/list/<int:page>/", methods=["GET"])
 @admin_login_req
-@admin_auth
+#@admin_auth
 def user_list(page=None):
     if page is None:
         page = 1
@@ -390,7 +403,7 @@ def user_list(page=None):
 
 @admin.route("/user/view/<int:id>/", methods=["GET"])
 @admin_login_req
-@admin_auth
+#@admin_auth
 def user_view(id=None):
     user = User.query.get_or_404(int(id))
     return render_template("admin/user_view.html", user=user)
@@ -398,9 +411,12 @@ def user_view(id=None):
 
 @admin.route("/user/del/<int:id>/", methods=['GET'])
 @admin_login_req
-@admin_auth
+#@admin_auth
 def user_del(id=None):
     user = User.query.get_or_404(int(id))
+    if not user.face is None:
+        old_face =app.config["FC_DIR"] + user.face
+        os.remove(old_face)
     db.session.delete(user)
     db.session.commit()
     flash("删除会员成功", "ok")
@@ -682,3 +698,4 @@ def admin_list(page=None):
         Admin.addtime.desc()
     ).paginate(page=page, per_page=10)
     return render_template("admin/admin_list.html",page_data=page_data)
+

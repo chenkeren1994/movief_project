@@ -39,6 +39,9 @@ def login():
     if form.validate_on_submit():
         data = form.data
         user = User.query.filter_by(name=data["name"]).first()
+        if user is None:
+            flash("用户名不存在!","err")
+            return redirect(url_for("home.login"))
         if not user.check_pwd(data["pwd"]):
             flash("密码错误！", "err")
             return redirect(url_for("home.login"))
@@ -77,7 +80,8 @@ def regist():
         )
         db.session.add(user)
         db.session.commit()
-        flash("注册成功!", "ok")
+        flash("注册成功!请登录~", "ok")
+        return redirect(url_for('home.login'))
     return render_template("home/regist.html", form=form)
 
 
@@ -95,6 +99,10 @@ def user():
         form.info.data = user.info
     if form.validate_on_submit():
         data = form.data
+        if not user.face is None:
+            old_face = app.config["FC_DIR"] + user.face
+            os.remove(old_face)
+
         name_count = User.query.filter_by(name=data["name"]).count()
         if data["name"] != user.name and name_count == 1:
             flash("昵称已经存在！", "err")
@@ -116,7 +124,6 @@ def user():
             os.chmod(app.config["FC_DIR"], "rw")
         user.face = change_filename(file_face)
         form.face.data.save(app.config["FC_DIR"] + user.face)
-
 
         user.name = data["name"]
         user.email = data["email"]
